@@ -9,9 +9,9 @@
   <img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python: 3.12+">
 </p>
 
-# CogniSync 🧠⚙️
+## What is CogniSync
 
-**CogniSync** is an autonomous background daemon designed to act as your local "Second Brain." It continuously monitors conversation logs in real-time, extracts valuable knowledge, context, and solutions using an AI-driven pipeline, and meticulously organizes them into a strictly structured knowledge base.
+**CogniSync** is an autonomous Antigravity background memory daemon designed to act as your local "Self Improving Brain." It continuously monitors conversations in real-time, extracts valuable knowledge, context, and solutions using an AI pipeline, and meticulously organizes them into a strictly structured knowledge base.
 
 
 ---
@@ -22,7 +22,7 @@
 - **Data Masking:** Automatically redacts sensitive credentials (API keys, tokens) before processing.
 - **4-Pass Cognitive Pipeline:**
   1. **Compress:** Filters out noise from raw dialogue and creates dense summaries.
-  2. **Extract:** Parallely extracts actionable context (memories) and problem-solution pairs.
+  2. **Extract:** Parallelly extracts actionable context (memories) and problem-solution pairs.
   3. **Slug Match:** Intelligently matches extracted data against existing Knowledge Items (KIs) using deterministic logic.
   4. **Consolidate:** Uses AI to merge new information into existing KIs, avoiding duplication.
 
