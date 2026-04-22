@@ -9,9 +9,11 @@
   <img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python: 3.12+">
 </p>
 
+# CogniSync
+
 ---
 
-## 🧬 Abstract
+## Abstract
 
 **CogniSync** is a high-performance autonomous daemon engineered to bridge the gap between ephemeral human dialogue and structured intelligence. It operates as a silent observer, continuously distilling real-time conversation logs into a meticulously organized "Second Brain." 
 
@@ -19,7 +21,7 @@ By leveraging a sophisticated multi-pass cognitive pipeline, CogniSync ensures t
 
 ---
 
-## 🛡️ Core Pillars
+## Core Pillars
 
 - **Autonomous Orchestration:** A zero-latency file watcher that monitors distributed conversation logs without human intervention.
 - **Privacy-First Intelligence:** Localized data masking that redacts PII and sensitive credentials before they ever reach the AI processing layer.
@@ -28,18 +30,18 @@ By leveraging a sophisticated multi-pass cognitive pipeline, CogniSync ensures t
 
 ---
 
-## ⚙️ The Cognitive Pipeline
+## The Cognitive Pipeline
 
 CogniSync employs a deterministic 4-pass pipeline to ensure maximum signal-to-noise ratio:
 
 1.  **Distill (Compress):** Strips conversational overhead to produce dense, high-fidelity summaries.
-2.  **Extract (Analyze):** Parallely identifies factual memories and complex problem-solution pairs.
+2.  **Extract (Analyze):** Parallelly identifies factual memories and complex problem-solution pairs.
 3.  **Contextualize (Slug Match):** Resolves extracted entities against the existing knowledge graph using fuzzy-deterministic logic.
 4.  **Synthesize (Consolidate):** Merges incremental updates into existing Knowledge Items (KIs), maintaining a unified source of truth.
 
 ---
 
-## 📂 System Architecture
+## System Architecture
 
 ```bash
 CogniSync/
@@ -58,7 +60,7 @@ CogniSync/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Environment Synthesis
 Clone the repository and prepare your environment:
@@ -91,7 +93,7 @@ python3 main.py status
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions that push the boundaries of autonomous knowledge management. 
 
