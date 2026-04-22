@@ -2,6 +2,12 @@
   <img src="assets/banner.svg" width="900" alt="CogniSync Banner">
 </p>
 
+<p align="center">
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License: MIT">
+  </a>
+</p>
+
 # CogniSync 🧠⚙️
 
 **CogniSync** is an autonomous background daemon designed to act as your local "Second Brain." It continuously monitors conversation logs in real-time, extracts valuable knowledge, context, and solutions using an AI-driven pipeline, and meticulously organizes them into a strictly structured knowledge base.
