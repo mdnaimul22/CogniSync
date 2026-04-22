@@ -9,131 +9,100 @@
   <img src="https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python: 3.12+">
 </p>
 
-## What is CogniSync
+---
 
-**CogniSync** is an autonomous Antigravity background memory daemon designed to act as your local "Self Improving Brain." It continuously monitors conversations in real-time, extracts valuable knowledge, context, and solutions using an AI pipeline, and meticulously organizes them into a strictly structured knowledge base.
+## 🧬 Abstract
 
+**CogniSync** is a high-performance autonomous daemon engineered to bridge the gap between ephemeral human dialogue and structured intelligence. It operates as a silent observer, continuously distilling real-time conversation logs into a meticulously organized "Second Brain." 
+
+By leveraging a sophisticated multi-pass cognitive pipeline, CogniSync ensures that every insight, decision, and solution is captured, deduplicated, and persisted—transforming raw text into actionable, long-term knowledge.
 
 ---
 
-## 🚀 Features
+## 🛡️ Core Pillars
 
-- **Real-Time Monitoring:** Utilizes `watchdog` to silently observe conversation logs in the background.
-- **Data Masking:** Automatically redacts sensitive credentials (API keys, tokens) before processing.
-- **4-Pass Cognitive Pipeline:**
-  1. **Compress:** Filters out noise from raw dialogue and creates dense summaries.
-  2. **Extract:** Parallelly extracts actionable context (memories) and problem-solution pairs.
-  3. **Slug Match:** Intelligently matches extracted data against existing Knowledge Items (KIs) using deterministic logic.
-  4. **Consolidate:** Uses AI to merge new information into existing KIs, avoiding duplication.
+- **Autonomous Orchestration:** A zero-latency file watcher that monitors distributed conversation logs without human intervention.
+- **Privacy-First Intelligence:** Localized data masking that redacts PII and sensitive credentials before they ever reach the AI processing layer.
+- **Semantic Consolidation:** Intelligent merging logic that prevents knowledge fragmentation by unifying new insights with existing records.
+- **Architectural Integrity:** Built on **Clean Architecture** principles, ensuring a modular, testable, and future-proof codebase.
 
 ---
 
-## 📂 Architecture & Directory Structure
+## ⚙️ The Cognitive Pipeline
 
-```
+CogniSync employs a deterministic 4-pass pipeline to ensure maximum signal-to-noise ratio:
+
+1.  **Distill (Compress):** Strips conversational overhead to produce dense, high-fidelity summaries.
+2.  **Extract (Analyze):** Parallely identifies factual memories and complex problem-solution pairs.
+3.  **Contextualize (Slug Match):** Resolves extracted entities against the existing knowledge graph using fuzzy-deterministic logic.
+4.  **Synthesize (Consolidate):** Merges incremental updates into existing Knowledge Items (KIs), maintaining a unified source of truth.
+
+---
+
+## 📂 System Architecture
+
+```bash
 CogniSync/
-├── data/               # Persistent data (e.g., state.json)
-├── logs/               # Application logs (daemon.log)
-├── prompts/            # LLM Prompt templates for pipeline passes
-├── tests/              # Unit tests (Pytest)
 ├── src/
-│   ├── config/         # Foundation: paths, settings, .env, and unified logger
-│   ├── core/           # Domain Logic: state management and text preprocessing
-│   ├── helpers/        # Utilities: masking, detection
-│   ├── providers/      # Integrations: OpenAI-compatible LLM wrapper
-│   ├── schema/         # Data Contracts: Pydantic models
-│   └── services/       # Use Cases: 4-Pass Pipeline, Watcher, Orchestration
-├── main.py             # CLI Entry Point
-├── .env.example        # Environment template
-└── README.md           # Documentation
+│   ├── config/         # System Foundation & Universal Path Resolution
+│   ├── core/           # Domain Logic & State Orchestration
+│   ├── services/       # Use Cases: 4-Pass Pipeline & Background Watcher
+│   ├── providers/      # Interface Adapters: LLM & External Integrations
+│   ├── schema/         # Data Contracts & Type Definitions
+│   └── helpers/        # Cross-cutting Concerns: Masking & Logging
+├── prompts/            # Expert-Level LLM Instruction Templates
+├── tests/              # Comprehensive Unit & Integration Suite
+├── main.py             # Unified CLI Controller
+└── .env.example        # Environment Specification
 ```
 
 ---
 
-## 🛠️ Installation & Setup
+## 🚀 Quick Start
 
-**1. Clone the repository and navigate to the directory:**
+### 1. Environment Synthesis
+Clone the repository and prepare your environment:
 ```bash
 git clone https://github.com/mdnaimul22/CogniSync.git
 cd CogniSync
 ```
 
-**2. Configure the Environment:**
-Create a `.env` file in the root directory. CogniSync supports **Universal Path Resolution** (using `~` for home directory expansion).
-
+Initialize your `.env` file (Supports **Universal Path Resolution**):
 ```dotenv
-APP_ENV=development
-
-# LLM Configuration
-LLM_BASE_URL=http://<YOUR_LLM_HOST>/v1
-LLM_MODEL=CohereForAI_C4AI_Command
-LLM_API_KEY=your_api_key_here
-LLM_TEMPERATURE=0.3
-LLM_MAX_TOKENS=4000
-
-# Daemon Paths (Supports tilde expansion)
+# Universal Paths (Supports ~ expansion)
 BRAIN_DIR=~/.gemini/antigravity/brain
 KNOWLEDGE_DIR=~/.gemini/antigravity/knowledge
+
+# LLM Specification
+LLM_BASE_URL=http://<YOUR_LLM_HOST>/v1
+LLM_MODEL=CohereForAI_C4AI_Command
 ```
 
-
----
-
-## 💻 Usage
-
-CogniSync provides a clean CLI interface via `main.py`.
-
-### 1. Start the Background Daemon
-To run the watcher continuously in the background, it is recommended to use `screen`:
-
+### 2. Execution
+Run the daemon in detached mode for continuous background synchronization:
 ```bash
-# Start in a detached screen session
 screen -dmS cognisync python3 main.py watch
-
-# Reattach to view logs
-screen -r cognisync
 ```
 
-### 2. Run Once
-To process all pending buffered logs and immediately exit (useful for cron jobs):
-```bash
-python3 main.py watch --once
-```
-
-### 3. Force Process a Specific Conversation
-If you want to manually process a conversation that was skipped or failed:
-```bash
-# Usage: python3 main.py process <conv_id>
-python3 main.py process 28704b99-d2ff-48d5-b424-b89222e1781b
-```
-
-### 4. Check System Status
-View current system health, loaded models, and knowledge tracking statistics:
+Monitor system health and knowledge density:
 ```bash
 python3 main.py status
 ```
 
 ---
 
-## 🧪 Testing
+## 🤝 Contributing
 
-The project is fully covered by robust unit tests. To run the test suite:
-```bash
-pytest tests/ -v
-```
+We welcome contributions that push the boundaries of autonomous knowledge management. 
+
+1.  **Fork** the repository.
+2.  **Branch:** `git checkout -b feature/Optimization`.
+3.  **Commit:** Adhere to conventional commit messages.
+4.  **Push:** `git push origin feature/Optimization`.
+5.  **PR:** Open a Pull Request for architectural review.
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome! If you'd like to improve CogniSync, please follow these steps:
-
-1. **Fork** the repository.
-2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`).
-3. **Commit your changes** (`git commit -m 'Add some AmazingFeature'`).
-4. **Push to the branch** (`git push origin feature/AmazingFeature`).
-5. **Open a Pull Request**.
-
-Please ensure your code adheres to the project's Clean Architecture standards and passes all tests.
-
-
+<p align="center">
+  <i>"Precision is not an accident; it is the deliberate application of strict standards."</i>
+</p>
