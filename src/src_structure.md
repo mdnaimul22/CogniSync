@@ -1,5 +1,5 @@
 # Directory Structure: src/
-## Path: /home/user_name/a0/usr/projects/Antigravity-CogniSync/src
+## Path: /home/user_name/a0/usr/projects/CogniSync/src
 
 src/
 │
