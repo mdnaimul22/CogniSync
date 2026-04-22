@@ -136,6 +136,4 @@ Contributions are welcome! If you'd like to improve CogniSync, please follow the
 
 Please ensure your code adheres to the project's Clean Architecture standards and passes all tests.
 
----
 
-*“Precision is not an accident; it is the deliberate application of strict standards.”*
