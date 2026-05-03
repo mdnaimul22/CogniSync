@@ -1,0 +1,19 @@
+{
+  "summary": "Python scripts in `src/` folders reviewed for compatibility with `python-patterns` | Scripts and variables follow Pythonic and self-explanatory naming conventions | Type safety ensured using `Pydantic` models for data contracts and type hints in all functions | Issues fixed by replacing file content",
+  "tags": [
+    "context",
+    "facts",
+    "global"
+  ],
+  "area": "main",
+  "project": "global",
+  "created_at": "2026-05-03T21:48:56.905837+00:00",
+  "modified_at": "2026-05-03T21:48:56.905837+00:00",
+  "version": 1,
+  "references": [
+    {
+      "type": "conversation",
+      "id": "b4887f77-e8a5-44ea-8574-d8e818d4c45a"
+    }
+  ]
+}

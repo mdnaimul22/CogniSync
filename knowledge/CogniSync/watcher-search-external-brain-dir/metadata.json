@@ -1,0 +1,21 @@
+{
+  "summary": "Problem: Watcher script only searched for conversations within the project's brain/ folder, ignoring the external BRAIN_DIR configuration | Solution: 1. Update the watcher.py script to use the BRAIN_DIR configuration variable for the search path\\n2. Ensure the script correctly detects and processes conversation folders within the specified external",
+  "tags": [
+    "python",
+    "file-watcher",
+    "configuration",
+    "directory-search",
+    "solution"
+  ],
+  "area": "solutions",
+  "project": "CogniSync",
+  "created_at": "2026-05-03T21:46:54.278972+00:00",
+  "modified_at": "2026-05-03T21:46:54.278972+00:00",
+  "version": 1,
+  "references": [
+    {
+      "type": "conversation",
+      "id": "b4887f77-e8a5-44ea-8574-d8e818d4c45a"
+    }
+  ]
+}

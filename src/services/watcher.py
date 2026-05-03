@@ -88,13 +88,16 @@ def start_watcher(settings: Settings, run_once: bool = False) -> None:
     for conv_dir in brain_dir.iterdir():
         if not conv_dir.is_dir() or conv_dir.name == "tempmediaStorage":
             continue
-        overview_rel = f"brain/{conv_dir.name}/.system_generated/logs/overview.txt"
-        if exists(overview_rel):
+        
+        # Construct absolute path to overview.txt
+        overview_path = conv_dir / ".system_generated" / "logs" / "overview.txt"
+        if overview_path.exists():
             buffers[conv_dir.name] = ConvBuffer(
-                overview_path=overview_rel,
+                overview_path=str(overview_path),
                 buffer_turns=Settings.WATCHER_BUFFER_TURNS,
                 buffer_timeout=Settings.WATCHER_BUFFER_TIMEOUT,
             )
+
 
     logger.info("╔══════════════════════════════════════════════╗")
     logger.info("║                 Memory Watcher               ║")

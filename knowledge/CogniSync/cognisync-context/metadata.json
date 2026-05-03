@@ -1,0 +1,19 @@
+{
+  "summary": "Project uses Python design patterns (Singleton, Factory, Observer, Strategy) and concurrency techniques (Threading, Multiprocessing, Async/Await). Python code in `src/` follows Pythonic naming conventions and uses `Pydantic` for type safety. Debug logs for `daemon.services.pipeline.extract` show regex fallback when JSON parsing fails in `src/services/pipeline/extract.py` at line 17 due to strict `json.loads()`. Fixed issue in `watcher.py` to search for conversations in external `BRAIN_DIR` location.",
+  "tags": [
+    "context",
+    "facts",
+    "CogniSync"
+  ],
+  "area": "main",
+  "project": "CogniSync",
+  "created_at": "2026-05-03T21:46:54.276415+00:00",
+  "modified_at": "2026-05-03T21:50:42.534994+00:00",
+  "version": 2,
+  "references": [
+    {
+      "type": "conversation",
+      "id": "b4887f77-e8a5-44ea-8574-d8e818d4c45a"
+    }
+  ]
+}

@@ -17,13 +17,16 @@ logger = setup_logger(Settings.LOG_DIR / "service.log", "daemon.services.orchest
 
 def process_conversation(settings: Settings, conv_id: str) -> None:
     """Force process a specific conversation from raw overview file."""
-    overview_rel = f"brain/{conv_id}/.system_generated/logs/overview.txt"
+    # Construct absolute path using Settings.BRAIN_DIR
+    overview_path = Settings.BRAIN_DIR / conv_id / ".system_generated" / "logs" / "overview.txt"
+    overview_path_str = str(overview_path)
 
-    if not exists(overview_rel):
-        logger.error("Overview file not found: %s", overview_rel)
+    if not overview_path.exists():
+        logger.error("Overview file not found: %s", overview_path_str)
         sys.exit(1)
 
-    raw_text = read_text(overview_rel)
+    raw_text = read_text(overview_path_str)
+
     turns = preprocess_overview(raw_text)
 
     if not turns:

@@ -15,7 +15,8 @@ def _parse_json(text: str) -> dict | None:
     try:
         return json.loads(text)
     except json.JSONDecodeError:
-        logger.debug("Initial JSON parse failed, falling back to regex")
+        logger.debug(f"Initial JSON parse failed (snippet: {text[:100]!r}), falling back to regex")
+
 
 
     match = re.search(r"([\{].*[\}])", text, re.DOTALL)
