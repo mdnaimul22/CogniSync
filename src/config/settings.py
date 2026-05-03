@@ -16,8 +16,27 @@ class Settings(BaseSettings):
     RAW_DATA_DIR: str = Field(default="data", validation_alias="DATA_DIR")
 
     def _resolve(self, val: str) -> Path:
+        """Resolve paths intelligently.
+        Handles:
+          - ~/.dir (Home)
+          - /.gemini (Forgot tilde, treat as Home)
+          - .gemini (Hidden folder, treat as Home)
+          - relative/path (Project Root)
+          - /absolute/path (System Root)
+        """
+        val = val.strip()
+        # Handle /.hidden -> ~/.hidden (Forgotten tilde)
+        if val.startswith("/."):
+            val = "~/" + val[2:] if val.startswith("/./") else "~/" + val[1:]
+
+        
+        # Handle .hidden (if it's not ./ or ../) -> treat as home relative for our tools
+        if val.startswith(".") and not val.startswith("./") and not val.startswith("../"):
+            val = "~/" + val
+
         p = Path(val).expanduser()
         return p if p.is_absolute() else PROJECT_ROOT / p
+
 
     @property
     def LOG_DIR(self) -> Path:

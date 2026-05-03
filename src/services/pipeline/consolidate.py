@@ -1,47 +1,49 @@
 """Pass 4 — Consolidation (LLM, only for slug conflicts)."""
 
 import json
-import logging
 import re
-from pathlib import Path
 
 from src.providers import LLMProvider
 from src.schema import KnowledgeCandidate
 from src.services.ki_writer import load_ki, slugify, update_ki, write_ki
+from src.config import Settings, setup_logger, read_text
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "service.log", "daemon.services.pipeline.consolidate")
 
 
 def _parse_json(text: str) -> dict | None:
     try:
         return json.loads(text)
     except json.JSONDecodeError:
-        pass
+        logger.debug("Initial JSON parse failed, falling back to regex")
+
+
     match = re.search(r"([\{].*[\}])", text, re.DOTALL)
     if match:
         try:
             return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            logger.debug(f"P4 JSON regex parse failed: {e}")
+
     return None
 
 
 def pass4_consolidate(
     llm: LLMProvider,
-    prompts_dir: Path,
-    knowledge_dir: Path,
+    prompts_dir_rel: str,
+    knowledge_dir_rel: str,
     project: str,
     candidate: KnowledgeCandidate,
     conv_id: str,
 ) -> None:
     """Merge a conflicting candidate with the existing KI via LLM."""
     slug = slugify(candidate.slug)
-    existing = load_ki(knowledge_dir, project, slug)
+    existing = load_ki(knowledge_dir_rel, project, slug)
 
     if not existing:
         # Race condition — write directly
         write_ki(
-            knowledge_dir=knowledge_dir,
+            knowledge_dir_rel=knowledge_dir_rel,
             project=project,
             slug=candidate.slug,
             summary=candidate.summary,
@@ -52,7 +54,7 @@ def pass4_consolidate(
         )
         return
 
-    system = (prompts_dir / "p4_consolidate.md").read_text(encoding="utf-8")
+    system = read_text(f"{prompts_dir_rel}/p4_consolidate.md")
     user_msg = (
         f"NEW:\n{candidate.summary}\n\n"
         f"EXISTING_SUMMARY:\n{existing['summary']}\n\n"

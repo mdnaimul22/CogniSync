@@ -3,25 +3,22 @@
 Compresses raw dialogue into a dense, searchable summary.
 """
 
-import logging
-
 from src.providers import LLMProvider
+from src.config import Settings, setup_logger, read_text, exists
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "service.log", "daemon.services.pipeline.compress")
 
 
-def pass1_compress(llm: LLMProvider, prompts_dir, raw_dialogue: str) -> str | None:
+def pass1_compress(llm: LLMProvider, prompts_dir_rel: str, raw_dialogue: str) -> str | None:
     """Compress raw dialogue into a short dense summary.
 
     Returns None when the conversation has no meaningful content.
     """
-    from pathlib import Path
-
-    prompt_path = Path(prompts_dir) / "p1_compress.md"
-    if not prompt_path.exists():
+    prompt_path = f"{prompts_dir_rel}/p1_compress.md"
+    if not exists(prompt_path):
         raise FileNotFoundError(f"Prompt not found: {prompt_path}")
 
-    system = prompt_path.read_text(encoding="utf-8")
+    system = read_text(prompt_path)
     result = llm.call(system=system, user=raw_dialogue)
 
     if not result or result.strip() == "-" or len(result.split()) < 10:

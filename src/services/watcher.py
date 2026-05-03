@@ -6,15 +6,15 @@ Cross-responsibility violations fixed:
   - Orchestration moved to src/services/orchestrator.py
 """
 
-import logging
 import time
-from pathlib import Path
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from src.config import Settings
+from src.config import Settings, setup_logger, exists
 from src.core import ConvBuffer
+
+logger = setup_logger(Settings.LOG_DIR / "service.log", "daemon.services.watcher")
 
 
 class OverviewHandler(FileSystemEventHandler):
@@ -24,40 +24,43 @@ class OverviewHandler(FileSystemEventHandler):
         self,
         buffers: dict[str, ConvBuffer],
         settings: Settings,
-        logger: logging.Logger,
     ) -> None:
         self._buffers = buffers
         self._settings = settings
-        self._logger = logger
 
     def on_modified(self, event) -> None:
         if event.is_directory:
             return
-        path = Path(event.src_path)
-        if path.name != "overview.txt":
+        path_name = event.src_path.split("/")[-1]
+        if path_name != "overview.txt":
             return
-        conv_id = path.parts[-4]
-        if conv_id in self._buffers:
-            self._buffers[conv_id].ingest_new_lines()
+        
+        parts = event.src_path.split("/")
+        if len(parts) >= 4:
+            conv_id = parts[-4]
+            if conv_id in self._buffers:
+                self._buffers[conv_id].ingest_new_lines()
 
     def on_created(self, event) -> None:
         if event.is_directory:
             return
-        path = Path(event.src_path)
-        if path.name != "overview.txt":
+        path_name = event.src_path.split("/")[-1]
+        if path_name != "overview.txt":
             return
-        self._register(path)
+        
+        parts = event.src_path.split("/")
+        if len(parts) >= 4:
+            conv_id = parts[-4]
+            self._register(event.src_path, conv_id)
 
-    def _register(self, overview_path: Path) -> None:
-        conv_id = overview_path.parts[-4]
+    def _register(self, overview_path: str, conv_id: str) -> None:
         if conv_id not in self._buffers:
             self._buffers[conv_id] = ConvBuffer(
                 overview_path=overview_path,
                 buffer_turns=self._settings.WATCHER_BUFFER_TURNS,
                 buffer_timeout=self._settings.WATCHER_BUFFER_TIMEOUT,
-                logger=self._logger,
             )
-            self._logger.info("  Registered new conversation: %s…", conv_id[:8])
+            logger.info("  Registered new conversation: %s…", conv_id[:8])
 
 
 def _flush_ready_buffers(
@@ -73,7 +76,7 @@ def _flush_ready_buffers(
                 process_buffered_dialogue(Settings, conv_id, dialogue, project)
 
 
-def start_watcher(settings: Settings, logger: logging.Logger, run_once: bool = False) -> None:
+def start_watcher(settings: Settings, run_once: bool = False) -> None:
     """Start the real-time file watcher. Called by orchestrator."""
     if not Settings.WATCHER_ENABLED:
         logger.info("Watcher disabled in config.")
@@ -85,13 +88,12 @@ def start_watcher(settings: Settings, logger: logging.Logger, run_once: bool = F
     for conv_dir in brain_dir.iterdir():
         if not conv_dir.is_dir() or conv_dir.name == "tempmediaStorage":
             continue
-        overview = conv_dir / ".system_generated" / "logs" / "overview.txt"
-        if overview.exists():
+        overview_rel = f"brain/{conv_dir.name}/.system_generated/logs/overview.txt"
+        if exists(overview_rel):
             buffers[conv_dir.name] = ConvBuffer(
-                overview_path=overview,
+                overview_path=overview_rel,
                 buffer_turns=Settings.WATCHER_BUFFER_TURNS,
                 buffer_timeout=Settings.WATCHER_BUFFER_TIMEOUT,
-                logger=logger,
             )
 
     logger.info("╔══════════════════════════════════════════════╗")
@@ -102,7 +104,7 @@ def start_watcher(settings: Settings, logger: logging.Logger, run_once: bool = F
     logger.info("  Buffer turns : %d", Settings.WATCHER_BUFFER_TURNS)
     logger.info("  Timeout      : %ds\n", Settings.WATCHER_BUFFER_TIMEOUT)
 
-    handler = OverviewHandler(buffers, Settings, logger)
+    handler = OverviewHandler(buffers, Settings)
     observer = Observer()
     observer.schedule(handler, str(brain_dir), recursive=True)
     observer.start()

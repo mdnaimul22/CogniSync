@@ -1,26 +1,27 @@
 """Persistent state tracking for Daemon processes."""
 
 import json
-import logging
-from pathlib import Path
-
 from src.schema import DaemonState
+from src.config import Settings, setup_logger, exists, read_text, write_text, ensure_dir
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "core.log", "daemon.core.state")
 
 
-def load_state(state_file: Path) -> DaemonState:
+def load_state(state_file_path: str) -> DaemonState:
     """Load daemon state (processed conversations)."""
-    if state_file.exists():
+    if exists(state_file_path):
         try:
-            data = json.loads(state_file.read_text(encoding="utf-8"))
+            data = json.loads(read_text(state_file_path))
             return DaemonState(**data)
         except Exception as exc:
-            logger.warning("Could not load state from %s: %s", state_file, exc)
+            logger.warning("Could not load state from %s: %s", state_file_path, exc)
     return DaemonState()
 
 
-def save_state(state_file: Path, state: DaemonState) -> None:
+def save_state(state_file_path: str, state: DaemonState) -> None:
     """Save daemon state."""
-    state_file.parent.mkdir(parents=True, exist_ok=True)
-    state_file.write_text(state.model_dump_json(indent=4), encoding="utf-8")
+    # Derive parent dir
+    parent = state_file_path.rsplit("/", 1)[0] if "/" in state_file_path else ""
+    if parent:
+        ensure_dir(parent)
+    write_text(state_file_path, state.model_dump_json(indent=4))

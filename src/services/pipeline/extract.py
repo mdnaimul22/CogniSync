@@ -1,15 +1,14 @@
 """Pass 2 — Dual extraction (memories + solutions) run in parallel."""
 
 import json
-import logging
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
 
 from src.providers.llm import LLMProvider
 from src.schema.models import SolutionExtract
+from src.config import Settings, setup_logger, read_text
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "service.log", "daemon.services.pipeline.extract")
 
 
 def _parse_json(text: str) -> list | dict | None:
@@ -17,24 +16,28 @@ def _parse_json(text: str) -> list | dict | None:
     try:
         return json.loads(text)
     except json.JSONDecodeError:
-        pass
+        logger.debug("Initial JSON parse failed, falling back to regex")
+
+
     match = re.search(r"```(?:json)?\s*([\[\{].*?[\]\}])\s*```", text, re.DOTALL)
     if match:
         try:
             return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            logger.debug(f"P2 JSON regex block parse failed: {e}")
+
     match = re.search(r"([\[\{].*[\]\}])", text, re.DOTALL)
     if match:
         try:
             return json.loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            logger.debug(f"P2 JSON broad regex parse failed: {e}")
+            
     return None
 
 
-def _extract_memories(llm: LLMProvider, prompts_dir: Path, compressed: str) -> list[str]:
-    system = (prompts_dir / "p2_memories.md").read_text(encoding="utf-8")
+def _extract_memories(llm: LLMProvider, prompts_dir_rel: str, compressed: str) -> list[str]:
+    system = read_text(f"{prompts_dir_rel}/p2_memories.md")
     raw = llm.call(system=system, user=f"Conversation summary:\n\n{compressed}")
     result = _parse_json(raw)
     if not isinstance(result, list):
@@ -42,8 +45,8 @@ def _extract_memories(llm: LLMProvider, prompts_dir: Path, compressed: str) -> l
     return [str(m) for m in result if m]
 
 
-def _extract_solutions(llm: LLMProvider, prompts_dir: Path, compressed: str) -> list[SolutionExtract]:
-    system = (prompts_dir / "p2_solutions.md").read_text(encoding="utf-8")
+def _extract_solutions(llm: LLMProvider, prompts_dir_rel: str, compressed: str) -> list[SolutionExtract]:
+    system = read_text(f"{prompts_dir_rel}/p2_solutions.md")
     raw = llm.call(system=system, user=f"Conversation summary:\n\n{compressed}")
     result = _parse_json(raw)
     if not isinstance(result, list):
@@ -57,7 +60,7 @@ def _extract_solutions(llm: LLMProvider, prompts_dir: Path, compressed: str) -> 
 
 def pass2_extract(
     llm: LLMProvider,
-    prompts_dir: Path,
+    prompts_dir_rel: str,
     compressed: str,
 ) -> tuple[list[str], list[SolutionExtract]]:
     """Run memories and solutions extraction in parallel.
@@ -68,8 +71,8 @@ def pass2_extract(
     solutions: list[SolutionExtract] = []
 
     with ThreadPoolExecutor(max_workers=2) as executor:
-        fut_mem = executor.submit(_extract_memories, llm, prompts_dir, compressed)
-        fut_sol = executor.submit(_extract_solutions, llm, prompts_dir, compressed)
+        fut_mem = executor.submit(_extract_memories, llm, prompts_dir_rel, compressed)
+        fut_sol = executor.submit(_extract_solutions, llm, prompts_dir_rel, compressed)
         for fut in as_completed([fut_mem, fut_sol]):
             if fut is fut_mem:
                 memories = fut.result()

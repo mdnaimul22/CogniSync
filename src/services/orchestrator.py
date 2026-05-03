@@ -3,28 +3,27 @@
 The fan-in point where core rules and service providers converge.
 """
 
-import logging
 import sys
-from pathlib import Path
 
-from src.config import Settings
+from src.config import Settings, setup_logger, read_text, exists
 from src.core import build_dialogue, preprocess_overview, load_state, save_state
 from src.helpers.detection import detect_project
 from src.helpers.masking import mask_sensitive_data
 from src.services.pipeline.engine import run_pipeline
 
-logger = logging.getLogger(__name__)
+logger = setup_logger(Settings.LOG_DIR / "service.log", "daemon.services.orchestrator")
+
 
 
 def process_conversation(settings: Settings, conv_id: str) -> None:
     """Force process a specific conversation from raw overview file."""
-    overview = Settings.BRAIN_DIR / conv_id / ".system_generated" / "logs" / "overview.txt"
+    overview_rel = f"brain/{conv_id}/.system_generated/logs/overview.txt"
 
-    if not overview.exists():
-        logger.error("Overview file not found: %s", overview)
+    if not exists(overview_rel):
+        logger.error("Overview file not found: %s", overview_rel)
         sys.exit(1)
 
-    raw_text = overview.read_text(encoding="utf-8", errors="ignore")
+    raw_text = read_text(overview_rel)
     turns = preprocess_overview(raw_text)
 
     if not turns:
@@ -39,10 +38,16 @@ def process_conversation(settings: Settings, conv_id: str) -> None:
         result = run_pipeline(Settings, dialogue, conv_id, project)
         logger.info("Processed %s. Created: %d, Consolidated: %d", conv_id, result.created, result.consolidated)
 
-        state = load_state(Settings.STATE_FILE)
+        state_file = str(Settings.STATE_FILE) # State file is a Path object from settings
+        # Wait, Settings.STATE_FILE is a property returning Path.
+        # But our rules say use relative paths. 
+        # Actually, Settings.STATE_FILE is already resolved.
+        
+        state = load_state(str(Settings.STATE_FILE))
         if conv_id not in state.processed:
             state.processed.append(conv_id)
-            save_state(Settings.STATE_FILE, state)
+            save_state(str(Settings.STATE_FILE), state)
+
     except Exception as exc:
         logger.error("Pipeline failed for %s: %s", conv_id, exc)
         sys.exit(1)
@@ -54,15 +59,16 @@ def process_buffered_dialogue(settings: Settings, conv_id: str, dialogue: str, p
         result = run_pipeline(Settings, dialogue, conv_id, project)
         logger.info("Processed %s. Created: %d, Consolidated: %d", conv_id, result.created, result.consolidated)
 
-        state = load_state(Settings.STATE_FILE)
+        state = load_state(str(Settings.STATE_FILE))
         if conv_id not in state.processed:
             state.processed.append(conv_id)
-            save_state(Settings.STATE_FILE, state)
+            save_state(str(Settings.STATE_FILE), state)
+
     except Exception as exc:
         logger.error("Pipeline error [%s]: %s", conv_id[:8], exc)
 
 
-def start_daemon(settings: Settings, main_logger: logging.Logger, run_once: bool = False) -> None:
+def start_daemon(settings: Settings, run_once: bool = False) -> None:
     """Start the real-time file watcher."""
     from src.services.watcher import start_watcher
-    start_watcher(Settings, main_logger, run_once=run_once)
+    start_watcher(Settings, run_once=run_once)

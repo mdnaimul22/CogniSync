@@ -9,7 +9,7 @@ Writes and updates KI files under knowledge/<project>/<slug>/:
 import json
 import re
 from datetime import datetime, timezone
-from pathlib import Path
+from src.config import Settings, exists, read_text, write_text, write_json, read_json, ensure_dir
 
 
 def slugify(text: str) -> str:
@@ -26,7 +26,7 @@ def _now() -> str:
 
 
 def write_ki(
-    knowledge_dir: Path,
+    knowledge_dir_rel: str,
     project: str,
     slug: str,
     summary: str,
@@ -34,12 +34,12 @@ def write_ki(
     tags: list[str],
     area: str,
     conv_id: str,
-) -> Path:
-    """Create a new KI under knowledge/<project>/<slug>/. Returns the KI directory."""
+) -> str:
+    """Create a new KI under knowledge/<project>/<slug>/. Returns the KI directory relative path."""
     slug = slugify(slug)
-    ki_dir = knowledge_dir / project / slug
-    artifacts_dir = ki_dir / "artifacts"
-    artifacts_dir.mkdir(parents=True, exist_ok=True)
+    ki_dir = f"{knowledge_dir_rel}/{project}/{slug}"
+    artifacts_dir = f"{ki_dir}/artifacts"
+    ensure_dir(artifacts_dir)
 
     now = _now()
 
@@ -53,26 +53,22 @@ def write_ki(
         "version": 1,
         "references": [{"type": "conversation", "id": conv_id}],
     }
-    (ki_dir / "metadata.json").write_text(
-        json.dumps(metadata, indent=4, ensure_ascii=False), encoding="utf-8"
-    )
+    write_json(f"{ki_dir}/metadata.json", metadata)
 
     timestamps = {"created": now, "modified": now, "accessed": now}
-    (ki_dir / "timestamps.json").write_text(
-        json.dumps(timestamps, indent=4), encoding="utf-8"
-    )
+    write_json(f"{ki_dir}/timestamps.json", timestamps)
 
-    (artifacts_dir / "summary.md").write_text(artifact_content, encoding="utf-8")
+    write_text(f"{artifacts_dir}/summary.md", artifact_content)
 
     return ki_dir
 
 
-def update_ki(ki_dir: Path, new_summary: str, new_artifact: str, conv_id: str) -> None:
+def update_ki(ki_dir_rel: str, new_summary: str, new_artifact: str, conv_id: str) -> None:
     """Update an existing KI. Increments version, appends reference."""
     now = _now()
 
-    meta_path = ki_dir / "metadata.json"
-    metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+    meta_path = f"{ki_dir_rel}/metadata.json"
+    metadata = read_json(meta_path)
     metadata["summary"] = new_summary
     metadata["modified_at"] = now
     metadata["version"] = metadata.get("version", 1) + 1
@@ -82,37 +78,35 @@ def update_ki(ki_dir: Path, new_summary: str, new_artifact: str, conv_id: str) -
         refs.append({"type": "conversation", "id": conv_id})
     metadata["references"] = refs
 
-    meta_path.write_text(
-        json.dumps(metadata, indent=4, ensure_ascii=False), encoding="utf-8"
-    )
+    write_json(meta_path, metadata)
 
-    ts_path = ki_dir / "timestamps.json"
-    timestamps = json.loads(ts_path.read_text(encoding="utf-8")) if ts_path.exists() else {}
+    ts_path = f"{ki_dir_rel}/timestamps.json"
+    timestamps = read_json(ts_path) if exists(ts_path) else {}
     timestamps["modified"] = now
-    ts_path.write_text(json.dumps(timestamps, indent=4), encoding="utf-8")
+    write_json(ts_path, timestamps)
 
-    artifacts_dir = ki_dir / "artifacts"
-    artifacts_dir.mkdir(exist_ok=True)
-    (artifacts_dir / "summary.md").write_text(new_artifact, encoding="utf-8")
+    artifacts_dir = f"{ki_dir_rel}/artifacts"
+    ensure_dir(artifacts_dir)
+    write_text(f"{artifacts_dir}/summary.md", new_artifact)
 
 
-def ki_exists(knowledge_dir: Path, project: str, slug: str) -> bool:
+def ki_exists(knowledge_dir_rel: str, project: str, slug: str) -> bool:
     """Check if a KI already exists."""
-    ki_dir = knowledge_dir / project / slugify(slug)
-    return (ki_dir / "metadata.json").exists()
+    ki_dir = f"{knowledge_dir_rel}/{project}/{slugify(slug)}"
+    return exists(f"{ki_dir}/metadata.json")
 
 
-def load_ki(knowledge_dir: Path, project: str, slug: str) -> dict | None:
+def load_ki(knowledge_dir_rel: str, project: str, slug: str) -> dict | None:
     """Load existing KI data. Returns None if not found."""
-    ki_dir = knowledge_dir / project / slugify(slug)
-    meta_path = ki_dir / "metadata.json"
-    artifact_path = ki_dir / "artifacts" / "summary.md"
+    ki_dir = f"{knowledge_dir_rel}/{project}/{slugify(slug)}"
+    meta_path = f"{ki_dir}/metadata.json"
+    artifact_path = f"{ki_dir}/artifacts/summary.md"
 
-    if not meta_path.exists():
+    if not exists(meta_path):
         return None
 
-    metadata = json.loads(meta_path.read_text(encoding="utf-8"))
-    artifact = artifact_path.read_text(encoding="utf-8") if artifact_path.exists() else ""
+    metadata = read_json(meta_path)
+    artifact = read_text(artifact_path) if exists(artifact_path) else ""
 
     return {
         "ki_dir": ki_dir,

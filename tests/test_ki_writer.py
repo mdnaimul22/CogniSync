@@ -13,6 +13,8 @@ def test_ki_writer(tmp_path: Path):
     knowledge_dir = tmp_path / "knowledge"
     knowledge_dir.mkdir()
     
+    # Use absolute strings for the test since ki_writer uses _abs() internally
+    knowledge_dir_str = str(knowledge_dir)
     project = "testproj"
     slug = "Test Candidate 1"
     summary = "This is a summary"
@@ -22,13 +24,13 @@ def test_ki_writer(tmp_path: Path):
     conv_id = "12345"
     
     # 1. Write
-    ki_dir = write_ki(knowledge_dir, project, slug, summary, artifact, tags, area, conv_id)
+    ki_dir_str = write_ki(knowledge_dir_str, project, slug, summary, artifact, tags, area, conv_id)
     
-    assert ki_dir.exists()
-    assert ki_exists(knowledge_dir, project, slug)
+    assert Path(ki_dir_str).exists()
+    assert ki_exists(knowledge_dir_str, project, slug)
     
     # 2. Load
-    loaded = load_ki(knowledge_dir, project, slug)
+    loaded = load_ki(knowledge_dir_str, project, slug)
     assert loaded is not None
     assert loaded["summary"] == summary
     assert loaded["artifact"] == artifact
@@ -37,9 +39,9 @@ def test_ki_writer(tmp_path: Path):
     # 3. Update
     new_summary = "Updated summary"
     new_artifact = "Updated artifact"
-    update_ki(ki_dir, new_summary, new_artifact, "67890")
+    update_ki(ki_dir_str, new_summary, new_artifact, "67890")
     
-    loaded2 = load_ki(knowledge_dir, project, slug)
+    loaded2 = load_ki(knowledge_dir_str, project, slug)
     assert loaded2 is not None
     assert loaded2["summary"] == new_summary
     assert loaded2["artifact"] == new_artifact

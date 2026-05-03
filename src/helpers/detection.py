@@ -1,7 +1,6 @@
 """Project name detection from conversation logs"""
 
 import re
-from pathlib import Path
 
 
 def detect_project(text: str) -> str:
@@ -14,12 +13,14 @@ def detect_project(text: str) -> str:
     counts: dict[str, int] = {}
 
     for match in re.finditer(r"CWD:\s*(/[\w/.\-]+)", text):
-        name = Path(match.group(1).strip().rstrip("/")).name
+        path = match.group(1).strip().rstrip("/")
+        name = path.split("/")[-1] if "/" in path else path
         if name and name not in ("", ".", "/"):
             counts[name] = counts.get(name, 0) + 3
 
     for match in re.finditer(r"\(in\s+(/[\w/.\-]+),", text):
-        name = Path(match.group(1).strip().rstrip("/")).name
+        path = match.group(1).strip().rstrip("/")
+        name = path.split("/")[-1] if "/" in path else path
         if name and name not in ("", ".", "/"):
             counts[name] = counts.get(name, 0) + 1
 
