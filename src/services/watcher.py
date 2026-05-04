@@ -11,7 +11,8 @@ import time
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from src.config import Settings, setup_logger, exists
+from src.config import Settings, setup_logger, exists, list_files
+
 from src.core import ConvBuffer
 
 logger = setup_logger(Settings.LOG_DIR / "service.log", "daemon.services.watcher")
