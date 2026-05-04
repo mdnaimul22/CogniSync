@@ -65,9 +65,10 @@ def run_pipeline(
     """Full 4-pass pipeline. Returns PipelineResult with created/consolidated counts."""
     llm = LLMProvider()
 
-    # Using relative strings for directories
-    knowledge_dir_rel = "knowledge"
-    prompts_dir_rel = "prompts"
+    # Using absolute paths from Settings to ensure external storage is respected
+    knowledge_dir_rel = str(Settings.KNOWLEDGE_DIR)
+    prompts_dir_rel = str(Settings.PROMPTS_DIR)
+
     result = PipelineResult()
 
     logger.info(_SEP)

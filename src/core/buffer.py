@@ -1,13 +1,12 @@
 """Dialogue buffering logic for turning bytes into turns."""
 
 import time
-import os
 from threading import Lock
-
 from .preprocessor import build_dialogue, parse_line
 from src.helpers import detect_project, mask_sensitive_data
 from src.schema import DialogueTurn
-from src.config import Settings, setup_logger, get_abs_path
+from src.config import Settings, setup_logger, get_abs_path, exists, get_size, read_from_pos
+
 
 logger = setup_logger(Settings.LOG_DIR / "core.log", "daemon.core.buffer")
 
@@ -22,10 +21,10 @@ class ConvBuffer:
         buffer_timeout: int,
     ) -> None:
         self.path_rel = overview_path
-        self.abs_path = get_abs_path(overview_path)
+        self.abs_path = overview_path # Keeping the name for compatibility, but it's the string passed
         self.buffer_turns = buffer_turns
         self.buffer_timeout = buffer_timeout
-        self.file_pos: int = os.path.getsize(self.abs_path) if os.path.exists(self.abs_path) else 0
+        self.file_pos: int = get_size(self.path_rel) if exists(self.path_rel) else 0
         self.turns: list[DialogueTurn] = []
         self.last_flush: float = time.time()
         self.raw_text: str = ""
@@ -35,14 +34,13 @@ class ConvBuffer:
         """Read newly appended bytes and parse turns."""
         with self._lock:
             try:
-                if not os.path.exists(self.abs_path):
+                if not exists(self.path_rel):
                     return
-                size = os.path.getsize(self.abs_path)
+                size = get_size(self.path_rel)
                 if size <= self.file_pos:
                     return
-                with open(self.abs_path, "r", encoding="utf-8", errors="ignore") as f:
-                    f.seek(self.file_pos)
-                    new_data = f.read()
+                
+                new_data = read_from_pos(self.path_rel, self.file_pos)
                 self.file_pos = size
                 self.raw_text += new_data
                 for line in new_data.splitlines():
@@ -54,6 +52,7 @@ class ConvBuffer:
                         self.turns.append(turn)
             except Exception as exc:
                 logger.warning("  Ingest error: %s", exc)
+
 
     def should_flush(self) -> bool:
         if not self.turns:

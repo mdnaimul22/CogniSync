@@ -85,15 +85,19 @@ def start_watcher(settings: Settings, run_once: bool = False) -> None:
     brain_dir = Settings.BRAIN_DIR
     buffers: dict[str, ConvBuffer] = {}
 
-    for conv_dir in brain_dir.iterdir():
+    # Using list_files from src.config instead of .iterdir()
+    for conv_dir in list_files(str(brain_dir), "*"):
         if not conv_dir.is_dir() or conv_dir.name == "tempmediaStorage":
             continue
         
         # Construct absolute path to overview.txt
         overview_path = conv_dir / ".system_generated" / "logs" / "overview.txt"
-        if overview_path.exists():
+        overview_path_str = str(overview_path)
+        
+        if exists(overview_path_str):
             buffers[conv_dir.name] = ConvBuffer(
-                overview_path=str(overview_path),
+                overview_path=overview_path_str,
+
                 buffer_turns=Settings.WATCHER_BUFFER_TURNS,
                 buffer_timeout=Settings.WATCHER_BUFFER_TIMEOUT,
             )

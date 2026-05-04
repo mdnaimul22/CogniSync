@@ -42,14 +42,20 @@ def cmd_status(args) -> None:
     logger.info(f"Processed Convs: {len(state.processed)}")
 
 
-    if Settings.KNOWLEDGE_DIR.exists():
-        projects = [d for d in Settings.KNOWLEDGE_DIR.iterdir() if d.is_dir()]
+    # Use src.config utilities instead of direct Path calls
+    kb_path = str(Settings.KNOWLEDGE_DIR)
+    from src.config import exists, list_files
+
+    if exists(kb_path):
+        projects = [d for d in list_files(kb_path, "*") if d.is_dir()]
         logger.info(f"Tracked Projects: {len(projects)}")
         for p in projects[:5]:
-            kis = len(list(p.glob("*/metadata.json")))
+            # list_files returns Path objects, we can use them for metadata check
+            kis = len(list_files(str(p), "*/metadata.json"))
             logger.info(f"  - {p.name}: {kis} KIs")
     else:
         logger.info("Knowledge Dir not found.")
+
 
 
 def main() -> None:

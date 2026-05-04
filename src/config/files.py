@@ -52,5 +52,16 @@ def list_files(relative_path: str, pattern: str = "*") -> list[Path]:
     return list(_abs(relative_path).glob(pattern))
 
 
+def get_size(relative_path: str) -> int:
+    return os.path.getsize(_abs(relative_path))
+
+
+def read_from_pos(relative_path: str, pos: int, encoding: str = "utf-8") -> str:
+    with open(_abs(relative_path), "r", encoding=encoding, errors="ignore") as f:
+        f.seek(pos)
+        return f.read()
+
+
 def get_abs_path(*parts: str) -> str:
     return str(PROJECT_ROOT.joinpath(*parts))
+

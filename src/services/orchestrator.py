@@ -21,8 +21,9 @@ def process_conversation(settings: Settings, conv_id: str) -> None:
     overview_path = Settings.BRAIN_DIR / conv_id / ".system_generated" / "logs" / "overview.txt"
     overview_path_str = str(overview_path)
 
-    if not overview_path.exists():
+    if not exists(overview_path_str):
         logger.error("Overview file not found: %s", overview_path_str)
+
         sys.exit(1)
 
     raw_text = read_text(overview_path_str)
